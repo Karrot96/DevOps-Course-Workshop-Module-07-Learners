@@ -1,37 +1,51 @@
 name: Continuous Integration
-on: [push]
+on: [push]                      # Will make the workflow run every time you push to any branch
 
 jobs:
-  build:
-    name: Build and test
-    runs-on: ubuntu-latest
+  build_and_test_cSharp:
+    name: Build and test c#
+    runs-on: ubuntu-latest      # Sets the build environment a machine with the latest Ubuntu installed
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Setup .NET Core SDK 3.1
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 3.1.x
-
-    - name: Dotnet build
-      run: dotnet build --configuration Release
-
-    - name: Dotnet test
+    - uses: actions/checkout@v2 # Adds a step to checkout the repository code
+    - name: Build C# code
+      run: dotnet build
+    - name: Run C# tests
       run: dotnet test
 
-    - name: Setup node
-      uses: actions/setup-node@v1
-      with:
-        node-version: '12'
 
-    - name: Typescript install
-      run: npm ci
-      working-directory: ./DotnetTemplate.Web
+  build_and_test_ts:
+    name: Build and test ts
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./DotnetTemplate.Web      # Sets the build environment a machine with the latest Ubuntu installed
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install npm requirements
+      run: npm install
+    - name: Build typescript code
+      run: npm run build
+    - name: Run linter on ts code
+      run: npm run lint
+    - name: Run ts tests
+      run: npm t
 
-    - name: Typescript build
-      run: npm run build 
-      working-directory: ./DotnetTemplate.Web
-
-    - name: Typescript test
-      run: npm run test
-      working-directory: ./DotnetTemplate.Web
+  slack-workflow-status:
+    if: always()
+    name: Post Workflow Status to slack
+    needs:
+      - build_and_test_cSharp
+      - build_and_test_ts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slack Workflow Notification
+        uses: Gamesight/slack-workflow-status@master
+        with:
+          # Required Input
+          repo_token: ${{secrets.GITHUB_TOKEN}}
+          slack_webhook_url: ${{secrets.SLACK_WEBHOOK_URL}}
+          # Optional Input
+          channel: '#devops'
+          name: 'Workflow Action'
+          icon_emoji: ':poop:'
+          icon_url: 'https://avatars0.githubusercontent.com/u/1701160?s=96&v=4'
