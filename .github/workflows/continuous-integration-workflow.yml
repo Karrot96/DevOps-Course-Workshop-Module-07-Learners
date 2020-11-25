@@ -30,22 +30,23 @@ jobs:
     - name: Run ts tests
       run: npm t
 
-  slack-workflow-status:
+  publish_to_docker_hub:
     if: always()
-    name: Post Workflow Status to slack
     needs:
       - build_and_test_cSharp
       - build_and_test_ts
     runs-on: ubuntu-latest
     steps:
-      - name: Slack Workflow Notification
-        uses: Gamesight/slack-workflow-status@master
+      - name: Login to DockerHub
+        uses: docker/login-action@v1 
         with:
-          # Required Input
-          repo_token: ${{secrets.GITHUB_TOKEN}}
-          slack_webhook_url: ${{secrets.SLACK_WEBHOOK_URL}}
-          # Optional Input
-          channel: '#devops'
-          name: 'Workflow Action'
-          icon_emoji: ':poop:'
-          icon_url: 'https://avatars0.githubusercontent.com/u/1701160?s=96&v=4'
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: user/app:latest
+
+      
