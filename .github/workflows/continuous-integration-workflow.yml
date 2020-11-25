@@ -95,7 +95,7 @@ jobs:
       uses: jtalk/url-health-check-action@v1.2
       with:
         # Check the following URLs one by one sequentially
-        url: https://cryptic-wave-06593.herokuapp.com/health2
+        url: https://cryptic-wave-06593.herokuapp.com/health
         # Follow redirects, or just report success on 3xx status codes
         follow-redirect: no # Optional, defaults to "no"
         # Fail this action after this many failed attempts
