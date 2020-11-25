@@ -28,6 +28,5 @@ WORKDIR /DotnetApplication/DotnetTemplate.Web
 RUN npm install
 RUN npm run build
 
-RUN dotnet run
-
 EXPOSE 5000
+ENTRYPOINT [ "dotnet", "run" ]
